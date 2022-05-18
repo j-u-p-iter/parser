@@ -74,8 +74,8 @@ class Parser {
    * Statement           => ExpressionStatement | BlockStatement | EmptyStatement;
    * BlockStatement      => "{" StatementList | ɛ "}";
    * ExpressionStatement => MultiplicationExpression;
-   * MultiplicationExpression => AdditiveExpression "| AdditiveExpressin (+ | -) AdditiveExpression;";
    * AdditiveExpression => Literal | Literal (+|-) Literal;
+   * MultiplicationExpression => AdditiveExpression "| AdditiveExpressin (+ | -) AdditiveExpression;";
    * Literal             => NumericLiteral | StringLiteral;
    * NumericLiteral      => NUMBER;
    * StringLiteral       => STRING;
@@ -139,7 +139,7 @@ class Parser {
 
       const rightOperand = this.ComparisonExpression();
 
-      leftOperand = this.BinaryExpression(
+      leftOperand = this.BinaryNode(
         leftOperand, 
         operator.value, 
         rightOperand
@@ -157,7 +157,7 @@ class Parser {
 
       const rightOperand = this.AdditiveExpression();
 
-      leftOperand = this.BinaryExpression(
+      leftOperand = this.BinaryNode(
         leftOperand, 
         operator.value, 
         rightOperand
@@ -175,7 +175,7 @@ class Parser {
 
       const rightOperand = this.MultiplicativeExpression();
 
-      leftOperand = this.BinaryExpression(
+      leftOperand = this.BinaryNode(
         leftOperand, 
         operator.value, 
         rightOperand
@@ -186,14 +186,14 @@ class Parser {
   }
 
   MultiplicativeExpression() {
-    let leftOperand = this.Literal();
+    let leftOperand = this.UnaryNode();
 
     while(this._check('MULTIPLICATIVE_OPERATOR')) {
       const operator = this._eat('MULTIPLICATIVE_OPERATOR');
 
-      const rightOperand = this.Literal();
+      const rightOperand = this.UnaryNode();
 
-      leftOperand = this.BinaryExpression(
+      leftOperand = this.BinaryNode(
         leftOperand, 
         operator.value, 
         rightOperand
@@ -219,6 +219,26 @@ class Parser {
     return expressionStatement;
   }
   
+  UnaryExpression() {
+    const operator = this._match('ADDITIVE_OPERATOR', 'LOGICAL_NOT_OPERATOR');
+
+    if (operator) {
+      const argument = this.UnaryExpression();
+
+      return this.UnaryNode(operator.value, argument);
+    }
+
+    return this.Literal();
+  }
+
+  UnaryNode(operator, argument) {
+    return {
+      type: "UnaryExpression",
+      operator, 
+      argument,
+    };
+  }
+
   /**
    * 2 + 3 + 4 + 5
    *
@@ -240,7 +260,7 @@ class Parser {
    * The root (closest to the top) BinaryExpression will contain 9 + 5 (9 is the described above left operand).
    */
 
-  BinaryExpression(leftOperand, operator, rightOperand) {
+  BinaryNode(leftOperand, operator, rightOperand) {
     return {
       type: "BinaryExpression",
       operator,
@@ -248,6 +268,7 @@ class Parser {
       right: rightOperand, 
     };
   }
+
 
   Literal() {
     switch(this._peek().type) {
@@ -287,10 +308,18 @@ class Parser {
     };
   }
 
+  _match(...operatorsTypes) {
+    for (const operatorType in operatorsTypes) {
+      if (this._check(operatorType)) {
+        return this._eat(operatorType); 
+      } 
+    }  
+
+    return null;
+  }
+
   _check(type) {
-    if(this._isEOF()) {
-      return false;
-    }
+    if(this._isEOF()) { return false; }
 
     return this._peek().type === type;
   }

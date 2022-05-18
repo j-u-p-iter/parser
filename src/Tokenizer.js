@@ -26,6 +26,8 @@ const Spec = [
 
   [/^[*|/]/, 'MULTIPLICATIVE_OPERATOR'],
 
+  [/^!/, 'LOGICAL_NOT_OPERATOR'],
+
   [/^"[^"]*"/, 'STRING'],
   [/^'[^']*'/, 'STRING'],
 ]
