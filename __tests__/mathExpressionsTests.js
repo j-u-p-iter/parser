@@ -118,5 +118,55 @@ module.exports = (test) => {
         },
       },
     }],
+  });
+
+  test(`
+5 == 3;
+  `, {
+    type: "Program",
+    body: [{
+      type: "ExpressionStatement",
+      expression: {
+        type: "BinaryExpression",
+        operator: "==",
+        left: {
+          type: "NumericLiteral",
+          value: 5,
+        },
+        right: {
+          type: "NumericLiteral",
+          value: 3,
+        },
+      },
+    }],
+  });
+
+  test(`
+5 == 3 != 7;
+  `, {
+    type: "Program",
+    body: [{
+      type: "ExpressionStatement",
+      expression: {
+        type: "BinaryExpression",
+        operator: "!=",
+        left: {
+          type: "BinaryExpression",
+          operator: "==",
+          left: {
+            type: "NumericLiteral",
+            value: 5,
+          },
+          right: {
+            type: "NumericLiteral",
+            value: 3
+          }
+        },
+        right: {
+          type: "NumericLiteral",
+          value: 7,
+        },
+      },
+    }],
   })
 };

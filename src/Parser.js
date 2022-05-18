@@ -131,6 +131,24 @@ class Parser {
     }  
   }
 
+  EqualityExpression() {
+    let leftOperand = this.ComparisonExpression();
+
+    while (this._check('EQUALITY_OPERATOR')) {
+      const operator = this._eat('EQUALITY_OPERATOR');
+
+      const rightOperand = this.ComparisonExpression();
+
+      leftOperand = this.BinaryExpression(
+        leftOperand, 
+        operator.value, 
+        rightOperand
+      );
+    }
+
+    return leftOperand;
+  }
+
   ComparisonExpression() {
     let leftOperand = this.AdditiveExpression();
 
@@ -188,7 +206,7 @@ class Parser {
   ExpressionStatement() {
     const expressionStatement = {
       type: "ExpressionStatement",
-      expression: this.ComparisonExpression(),
+      expression: this.EqualityExpression(),
     };
 
     /**
