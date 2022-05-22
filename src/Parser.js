@@ -186,12 +186,12 @@ class Parser {
   }
 
   MultiplicativeExpression() {
-    let leftOperand = this.UnaryNode();
+    let leftOperand = this.UnaryExpression();
 
     while(this._check('MULTIPLICATIVE_OPERATOR')) {
       const operator = this._eat('MULTIPLICATIVE_OPERATOR');
 
-      const rightOperand = this.UnaryNode();
+      const rightOperand = this.UnaryExpression();
 
       leftOperand = this.BinaryNode(
         leftOperand, 
@@ -309,7 +309,7 @@ class Parser {
   }
 
   _match(...operatorsTypes) {
-    for (const operatorType in operatorsTypes) {
+    for (const operatorType of operatorsTypes) {
       if (this._check(operatorType)) {
         return this._eat(operatorType); 
       } 
