@@ -131,6 +131,10 @@ class Parser {
     }  
   }
 
+  Expression() {
+    return this.EqualityExpression();
+  }
+
   EqualityExpression() {
     let leftOperand = this.ComparisonExpression();
 
@@ -228,7 +232,22 @@ class Parser {
       return this.UnaryNode(operator.value, argument);
     }
 
-    return this.Literal();
+    return this.PrimaryExpression();
+  }
+
+  PrimaryExpression() {
+    switch(this._lookahead.type) {
+      case 'LEFT_PAREN':
+        this._eat('LEFT_PAREN');
+
+        const expression = this.Expression();
+
+        this._eat('RIGHT_PAREN');
+
+        return expression;
+      default:
+        return this.Literal()
+    }
   }
 
   UnaryNode(operator, argument) {

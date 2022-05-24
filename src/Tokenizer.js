@@ -26,11 +26,15 @@ const Spec = [
 
   [/^[*|/]/, 'MULTIPLICATIVE_OPERATOR'],
 
+  [/^\(/, 'LEFT_PAREN'],
+
+  [/^\)/, 'RIGHT_PAREN'],
+
   [/^!/, 'LOGICAL_NOT_OPERATOR'],
 
   [/^"[^"]*"/, 'STRING'],
   [/^'[^']*'/, 'STRING'],
-]
+];
 
 /**
  * Lazily pulls a token from a stream.

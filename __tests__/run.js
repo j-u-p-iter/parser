@@ -8,6 +8,7 @@ const specs = [
   require('./blockStatementTests.js'),
   require('./mathExpressionsTests.js'),
   require('./unaryExpressionsTests.js'),
+  require('./groupingTests.js'),
 ];
 
 const parser = new Parser();
