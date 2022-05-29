@@ -92,8 +92,6 @@ class Parser {
   StatementList() {
     let statementList = [];
 
-    const nextToken = this._peek(); 
-
     while(this._peek() !== null && this._peek().type !== '}') {
       statementList.push(this.Statement());
     }
@@ -132,7 +130,44 @@ class Parser {
   }
 
   Expression() {
-    return this.EqualityExpression();
+    return this.AssignmentExpression();
+  }
+
+  /**
+   * If we have ASSIGNMENT_OPERATOR:
+   * - we expect the IDENTIFIER (variable) in front of the ASSIGNMENT_OPERATOR
+   * - the expression after the ASSIGNMENT_OPERATOR 
+   *
+   * If there is not ASSIGNMENT_OPERATOR we expect to have one of the further 
+   *   expressions, starting from the EqualityExpression
+   *
+   * AssignmentExpression => IDENTIFIER ASSIGNMENT_OPERATOR AssignmentExpression | EqualityExpression
+   */
+  AssignmentExpression() {
+    const expression = this.EqualityExpression();
+
+    const assignmentOperator = this._match('ASSIGNMENT_OPERATOR');
+
+    if (assignmentOperator) {
+      const assignmentOperatorValue = assignmentOperator.value;
+
+      if (this._isIdentifier(expression)) {
+        return {
+          type: "AssignmentExpression",
+          operator: assignmentOperatorValue,
+          left: expression,
+          right: this.AssignmentExpression(),
+        }
+      }
+
+      throw new SyntaxError('Invalid left-hand side in the assignment expression. The identifier is expected.');
+    }
+
+    return expression;
+  }
+
+  _isIdentifier(expression) {
+    return expression.type === 'Identifier';
   }
 
   EqualityExpression() {
@@ -210,7 +245,7 @@ class Parser {
   ExpressionStatement() {
     const expressionStatement = {
       type: "ExpressionStatement",
-      expression: this.EqualityExpression(),
+      expression: this.Expression(),
     };
 
     /**
@@ -245,8 +280,11 @@ class Parser {
         this._eat('RIGHT_PAREN');
 
         return expression;
+      case 'IDENTIFIER':
+        return this.Identifier();
+
       default:
-        return this.Literal()
+        return this.Literal();
     }
   }
 
@@ -288,6 +326,15 @@ class Parser {
     };
   }
 
+
+  Identifier() {
+    const token = this._eat('IDENTIFIER');
+
+    return {
+      type: "Identifier",
+      name: token.value, 
+    }
+  };
 
   Literal() {
     switch(this._peek().type) {

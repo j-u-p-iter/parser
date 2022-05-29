@@ -18,6 +18,10 @@ const Spec = [
 
   [/^\d+/, 'NUMBER'],
 
+  [/^[a-zA-Z_]+\w*/, 'IDENTIFIER'],
+
+  [/^[\+\-\*]?=/, 'ASSIGNMENT_OPERATOR'],
+
   [/^[+-]/, 'ADDITIVE_OPERATOR'],
 
   [/^[=!]=/, 'EQUALITY_OPERATOR'],
