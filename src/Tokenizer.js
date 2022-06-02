@@ -18,9 +18,13 @@ const Spec = [
 
   [/^\d+/, 'NUMBER'],
 
+  [/^\blet\b/, 'let'],
+
   [/^[a-zA-Z_]+\w*/, 'IDENTIFIER'],
 
-  [/^[\+\-\*]?=/, 'ASSIGNMENT_OPERATOR'],
+  [/^=/, 'SIMPLE_ASSIGNMENT_OPERATOR'],
+
+  [/^[\+\-\*]=/, 'COMPLEX_ASSIGNMENT_OPERATOR'],
 
   [/^[+-]/, 'ADDITIVE_OPERATOR'],
 
@@ -29,6 +33,8 @@ const Spec = [
   [/^[<|>]=?/, 'COMPARISON_OPERATOR'],
 
   [/^[*|/]/, 'MULTIPLICATIVE_OPERATOR'],
+
+  [/^,/, ','],
 
   [/^\(/, 'LEFT_PAREN'],
 

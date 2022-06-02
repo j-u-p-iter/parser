@@ -107,9 +107,55 @@ class Parser {
       case '{':
         return this.BlockStatement();
 
+      case "let":
+        return this.VariableDeclarationStatement();
+
       default:
         return this.ExpressionStatement();
     }
+  }
+
+  VariableDeclarationStatement() {
+    this._eat('let');
+
+    const variableDeclarationsList = this.VariableDeclarationsList();
+
+    this._eat(';');
+
+    return {
+      type: "VariableDeclarationStatement",
+      declarations: variableDeclarationsList,
+    };
+  }
+
+  VariableDeclarationsList() {
+    const variableDeclarationsList = [this.VariableDeclaration()];
+
+    
+
+    while(this._match(',')) {
+      variableDeclarationsList.push(this.VariableDeclaration());
+    }
+
+    return variableDeclarationsList;
+  }
+
+  VariableDeclaration() {
+    const identifier = this.Identifier();
+
+    let initializer = null;
+
+    if (this._peek().type === 'SIMPLE_ASSIGNMENT_OPERATOR') {
+      this._eat('SIMPLE_ASSIGNMENT_OPERATOR');
+
+      initializer = this.Expression();
+    }
+
+    return {
+      type: "VariableDeclaration",
+      id: identifier,
+      init: initializer, 
+    };
   }
 
   EmptyStatement() {
@@ -146,7 +192,10 @@ class Parser {
   AssignmentExpression() {
     const expression = this.EqualityExpression();
 
-    const assignmentOperator = this._match('ASSIGNMENT_OPERATOR');
+    const assignmentOperator = this._match(
+      'SIMPLE_ASSIGNMENT_OPERATOR', 
+      'COMPLEX_ASSIGNMENT_OPERATOR'
+    );
 
     if (assignmentOperator) {
       const assignmentOperatorValue = assignmentOperator.value;

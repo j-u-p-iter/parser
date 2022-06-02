@@ -9,7 +9,8 @@ const specs = [
   //require('./mathExpressionsTests.js'),
   //require('./unaryExpressionsTests.js'),
   //require('./groupingTests.js'),
-  require('./assignmentExpressionsTests.js'),
+  //require('./assignmentExpressionsTests.js'),
+  require('./variableDeclarationStatementsTests.js'),
 ];
 
 const parser = new Parser();
