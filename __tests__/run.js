@@ -10,7 +10,8 @@ const specs = [
   //require('./unaryExpressionsTests.js'),
   //require('./groupingTests.js'),
   //require('./assignmentExpressionsTests.js'),
-  require('./variableDeclarationStatementsTests.js'),
+  //require('./variableDeclarationStatementsTests.js'),
+  require('./ifStatementTests.js'),
 ];
 
 const parser = new Parser();

@@ -28,8 +28,9 @@ const { Tokenizer } = require('./Tokenizer');
  *   Parser returns AST tree. As result, each production of the grammar will be represented by the AST tree node.
  *
  *   Each AST tree node has a type. So, each method, related to the respective production rule in the grammar will
- *   return AST tree node. Each AST tree node has the base structure in form of object with two main properties - type and value.
- *   Tree node can have more properties than just these two. But these two are mandatory and other options are optional.
+ *   return AST tree node. Each AST tree node has the base structure in form of object with two 
+ *   main properties - type and value. Tree node can have more properties than just these two. 
+ *   But these two are mandatory and other options are optional.
  *
  *   The program described by the grammar provided above has the the next AST structure (for the numeric literal equals to 5):
  *
@@ -92,7 +93,7 @@ class Parser {
   StatementList() {
     let statementList = [];
 
-    while(this._peek() !== null && this._peek().type !== '}') {
+    while(this._peek() !== null && !this._check('}')) {
       statementList.push(this.Statement());
     }
 
@@ -145,7 +146,7 @@ class Parser {
 
     let initializer = null;
 
-    if (this._peek().type === 'SIMPLE_ASSIGNMENT_OPERATOR') {
+    if (this._check('SIMPLE_ASSIGNMENT_OPERATOR')) {
       this._eat('SIMPLE_ASSIGNMENT_OPERATOR');
 
       initializer = this.Expression();
@@ -200,6 +201,7 @@ class Parser {
     if (assignmentOperator) {
       const assignmentOperatorValue = assignmentOperator.value;
 
+      // In case EqualityExpression deriviated to simple Identifier node.
       if (this._isIdentifier(expression)) {
         return {
           type: "AssignmentExpression",
@@ -471,7 +473,7 @@ class Parser {
 
     /**
      * All checks have been done.
-     *   Advance to next token and return it.
+     *   Advance to the next token and return it.
      */
 
     this._lookahead = this._tokenizer.getNextToken();
