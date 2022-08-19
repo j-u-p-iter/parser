@@ -25,7 +25,10 @@ const Spec = [
   [/^\blet\b/, 'let'],
 
   [/^true/, 'TRUE'],
+
   [/^false/, 'FALSE'],
+
+  [/^null/, 'NULL'],
 
   [/^[a-zA-Z_]+\w*/, 'IDENTIFIER'],
 

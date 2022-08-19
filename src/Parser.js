@@ -421,7 +421,7 @@ class Parser {
   };
 
   /**
-   * Literal => NumericLiteral | StringLiteral |
+   * Literal => NumericLiteral | StringLiteral | BooleanLiteral | NullLiteral;
    *
    *
    */
@@ -438,9 +438,21 @@ class Parser {
 
       case 'FALSE':
         return this.BooleanLiteral(false)
+
+      case 'NULL':
+        return this.NullLiteral()
     }
 
     throw new SyntaxError('Literal: unexpected literal production.');
+  }
+
+  NullLiteral() {
+    const token = this._eat('NULL');
+
+    return {
+      type: 'NullLiteral',
+      value: null,
+    };
   }
 
   /**
