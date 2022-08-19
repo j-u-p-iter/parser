@@ -16,6 +16,10 @@ const Spec = [
 
   [/^}/, '}'],
 
+  [/^if/, 'IF'],
+
+  [/^else/, 'ELSE'],
+
   [/^\d+/, 'NUMBER'],
 
   [/^\blet\b/, 'let'],

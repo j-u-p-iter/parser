@@ -108,12 +108,44 @@ class Parser {
       case '{':
         return this.BlockStatement();
 
+      case 'IF':
+        return this.IfStatement();
+
       case "let":
         return this.VariableDeclarationStatement();
 
       default:
         return this.ExpressionStatement();
     }
+  }
+
+  /**
+   * IfStatement => "if" "(" Expression ")" Statement ("else" Statement)?
+   *
+   */
+  IfStatement() {
+    this._eat('IF');
+
+    this._eat('LEFT_PAREN');
+
+    const test = this.Expression(); 
+
+    this._eat('RIGHT_PAREN');
+
+    const consequent = this.Statement(); 
+
+    let alternate = null;
+
+    if (this._match('ELSE')) {
+      alternate = this.Statement(); 
+    }
+
+    return {
+      type: 'IfStatement',
+      test,
+      consequent,
+      alternate,
+    };
   }
 
   VariableDeclarationStatement() {
@@ -331,6 +363,7 @@ class Parser {
         this._eat('RIGHT_PAREN');
 
         return expression;
+
       case 'IDENTIFIER':
         return this.Identifier();
 
