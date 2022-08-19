@@ -24,15 +24,19 @@ const Spec = [
 
   [/^\blet\b/, 'let'],
 
+  [/^true/, 'TRUE'],
+  [/^false/, 'FALSE'],
+
   [/^[a-zA-Z_]+\w*/, 'IDENTIFIER'],
 
-  [/^=/, 'SIMPLE_ASSIGNMENT_OPERATOR'],
 
   [/^[\+\-\*]=/, 'COMPLEX_ASSIGNMENT_OPERATOR'],
 
   [/^[+-]/, 'ADDITIVE_OPERATOR'],
 
   [/^[=!]=/, 'EQUALITY_OPERATOR'],
+
+  [/^=/, 'SIMPLE_ASSIGNMENT_OPERATOR'],
 
   [/^[<|>]=?/, 'COMPARISON_OPERATOR'],
 

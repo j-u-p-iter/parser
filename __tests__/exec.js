@@ -3,8 +3,7 @@ const { Parser } = require('../src/Parser');
 const parser = new Parser();
 
 const program = `    
-2 + 3 - 1; 
-
+x = true;
     `;
 
 const ast = parser.parse(program);

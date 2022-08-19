@@ -420,6 +420,11 @@ class Parser {
     }
   };
 
+  /**
+   * Literal => NumericLiteral | StringLiteral |
+   *
+   *
+   */
   Literal() {
     switch(this._peek().type) {
       case 'NUMBER':
@@ -427,6 +432,12 @@ class Parser {
 
       case 'STRING':
         return this.StringLiteral();
+
+      case 'TRUE':
+        return this.BooleanLiteral(true);
+
+      case 'FALSE':
+        return this.BooleanLiteral(false)
     }
 
     throw new SyntaxError('Literal: unexpected literal production.');
@@ -456,6 +467,15 @@ class Parser {
       type: 'StringLiteral',
       value: token.value.slice(1, -1),
     };
+  }
+
+  BooleanLiteral(value) {
+    this._eat(value ? 'TRUE' : 'FALSE');
+
+    return {
+      type: "LogicalLiteral",
+      value: value,
+    }
   }
 
   _match(...operatorsTypes) {
