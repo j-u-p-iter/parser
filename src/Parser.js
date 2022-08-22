@@ -114,6 +114,9 @@ class Parser {
       case 'WHILE':
         return this.WhileStatement();
 
+      case 'DO':
+        return this.DoWhileStatement();
+
       case "let":
         return this.VariableDeclarationStatement();
 
@@ -151,6 +154,11 @@ class Parser {
     };
   }
 
+  /**
+   * WhileStatemen => 
+   *   "while" "(" Expression ")" Statement;
+   *
+   */
   WhileStatement() {
     this._eat('WHILE');
 
@@ -167,6 +175,33 @@ class Parser {
       test,
       body,
     };
+  }
+
+  /**
+   * DoWhileStatement => 
+   *   "do" Statement "while" "(" Expression ")" ";";
+   *
+   */
+  DoWhileStatement() {
+    this._eat("DO");
+
+    const body = this.Statement();
+
+    this._eat("WHILE");
+
+    this._eat("LEFT_PAREN");
+
+    const test = this.Expression();
+
+    this._eat("RIGHT_PAREN");
+
+    this._eat(";");
+
+    return {
+      type: "DoWhileStatement",
+      body,
+      test,
+    }
   }
 
   VariableDeclarationStatement() {

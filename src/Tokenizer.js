@@ -20,6 +20,8 @@ const Spec = [
 
   [/^while/, 'WHILE'],
 
+  [/^do/, 'DO'],
+
   [/^else/, 'ELSE'],
 
   [/^\d+/, 'NUMBER'],

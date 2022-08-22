@@ -13,6 +13,7 @@ const specs = [
   require('./variableDeclarationStatementsTests.js'),
   require('./ifStatementTests.js'),
   require('./whileStatementTests.js'),
+  require('./doWhileStatementTests.js'),
 ];
 
 const parser = new Parser();
