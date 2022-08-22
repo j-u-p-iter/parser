@@ -18,6 +18,8 @@ const Spec = [
 
   [/^if/, 'IF'],
 
+  [/^while/, 'WHILE'],
+
   [/^else/, 'ELSE'],
 
   [/^\d+/, 'NUMBER'],
@@ -32,6 +34,9 @@ const Spec = [
 
   [/^[a-zA-Z_]+\w*/, 'IDENTIFIER'],
 
+  [/^&&/, 'LOGICAL_AND'],
+
+  [/^\|\|/, 'LOGICAL_OR'],
 
   [/^[\+\-\*]=/, 'COMPLEX_ASSIGNMENT_OPERATOR'],
 

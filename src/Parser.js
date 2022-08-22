@@ -111,6 +111,9 @@ class Parser {
       case 'IF':
         return this.IfStatement();
 
+      case 'WHILE':
+        return this.WhileStatement();
+
       case "let":
         return this.VariableDeclarationStatement();
 
@@ -145,6 +148,24 @@ class Parser {
       test,
       consequent,
       alternate,
+    };
+  }
+
+  WhileStatement() {
+    this._eat('WHILE');
+
+    this._eat('LEFT_PAREN');
+
+    const test = this.Expression();
+
+    this._eat('RIGHT_PAREN');
+
+    const body = this.Statement();
+
+    return {
+      type: "WhileStatement",
+      test,
+      body,
     };
   }
 
@@ -220,10 +241,10 @@ class Parser {
    * If there is not ASSIGNMENT_OPERATOR we expect to have one of the further 
    *   expressions, starting from the EqualityExpression
    *
-   * AssignmentExpression => IDENTIFIER ASSIGNMENT_OPERATOR AssignmentExpression | EqualityExpression
+   * AssignmentExpression => IDENTIFIER ASSIGNMENT_OPERATOR AssignmentExpression | LogicalORExpression
    */
   AssignmentExpression() {
-    const expression = this.EqualityExpression();
+    const expression = this.LogicalOrExpression();
 
     const assignmentOperator = this._match(
       'SIMPLE_ASSIGNMENT_OPERATOR', 
@@ -251,6 +272,42 @@ class Parser {
 
   _isIdentifier(expression) {
     return expression.type === 'Identifier';
+  }
+
+  LogicalOrExpression() {
+    let leftOperand = this.LogicalAndExpression();
+
+    while(this._check('LOGICAL_OR')) {
+      const operator = this._eat('LOGICAL_OR');
+
+      const rightOperand = this.LogicalAndExpression();
+
+      leftOperand = this.LogicalNode(
+        leftOperand, 
+        operator.value, 
+        rightOperand
+      );
+    }
+
+    return leftOperand;
+  }
+
+  LogicalAndExpression() {
+    let leftOperand = this.EqualityExpression();
+
+    while(this._check('LOGICAL_AND')) {
+      const operator = this._eat('LOGICAL_AND');
+
+      const rightOperand = this.EqualityExpression();
+
+      leftOperand = this.LogicalNode(
+        leftOperand, 
+        operator.value, 
+        rightOperand
+      );
+    }
+
+    return leftOperand;
   }
 
   EqualityExpression() {
@@ -404,6 +461,15 @@ class Parser {
   BinaryNode(leftOperand, operator, rightOperand) {
     return {
       type: "BinaryExpression",
+      operator,
+      left: leftOperand,
+      right: rightOperand, 
+    };
+  }
+  
+  LogicalNode(leftOperand, operator, rightOperand) {
+    return {
+      type: "LogicalExpression",
       operator,
       left: leftOperand,
       right: rightOperand, 
