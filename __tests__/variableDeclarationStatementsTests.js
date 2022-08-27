@@ -4,10 +4,10 @@ let x = 5;
   `, {
       type: "Program",
       body: [{
-        type: "VariableDeclarationStatement",
+        type: "VariableDeclaration",
         declarations: [
           {
-            type: "VariableDeclaration",
+            type: "VariableDeclarator",
             id: {
               type: "Identifier",
               name: "x",
@@ -26,10 +26,10 @@ let x = 4, y = 5;
   `, {
       type: "Program",
       body: [{
-        type: "VariableDeclarationStatement",
+        type: "VariableDeclaration",
         declarations: [
           {
-            type: "VariableDeclaration",
+            type: "VariableDeclarator",
             id: {
               type: "Identifier",
               name: "x",
@@ -40,7 +40,7 @@ let x = 4, y = 5;
             },
           },
           {
-            type: "VariableDeclaration",
+            type: "VariableDeclarator",
             id: {
               type: "Identifier",
               name: "y",
@@ -59,10 +59,10 @@ let x, y = 5;
   `, {
       type: "Program",
       body: [{
-        type: "VariableDeclarationStatement",
+        type: "VariableDeclaration",
         declarations: [
           {
-            type: "VariableDeclaration",
+            type: "VariableDeclarator",
             id: {
               type: "Identifier",
               name: "x",
@@ -70,7 +70,7 @@ let x, y = 5;
             init: null,
           },
           {
-            type: "VariableDeclaration",
+            type: "VariableDeclarator",
             id: {
               type: "Identifier",
               name: "y",
@@ -89,10 +89,10 @@ let x, y;
   `, {
       type: "Program",
       body: [{
-        type: "VariableDeclarationStatement",
+        type: "VariableDeclaration",
         declarations: [
           {
-            type: "VariableDeclaration",
+            type: "VariableDeclarator",
             id: {
               type: "Identifier",
               name: "x",
@@ -100,7 +100,7 @@ let x, y;
             init: null,
           },
           {
-            type: "VariableDeclaration",
+            type: "VariableDeclarator",
             id: {
               type: "Identifier",
               name: "y",
@@ -116,10 +116,10 @@ let x = y = 5;
   `, {
       type: "Program",
       body: [{
-        type: "VariableDeclarationStatement",
+        type: "VariableDeclaration",
         declarations: [
           {
-            type: "VariableDeclaration",
+            type: "VariableDeclarator",
             id: {
               type: "Identifier",
               name: "x",

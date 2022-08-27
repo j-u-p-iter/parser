@@ -14,6 +14,7 @@ const specs = [
   require('./ifStatementTests.js'),
   require('./whileStatementTests.js'),
   require('./doWhileStatementTests.js'),
+  require('./forStatementTests.js'),
 ];
 
 const parser = new Parser();

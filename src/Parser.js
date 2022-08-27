@@ -117,6 +117,9 @@ class Parser {
       case 'DO':
         return this.DoWhileStatement();
 
+      case "FOR":
+        return this.ForStatement();
+
       case "let":
         return this.VariableDeclarationStatement();
 
@@ -151,6 +154,36 @@ class Parser {
       test,
       consequent,
       alternate,
+    };
+  }
+
+  ForStatement() {
+    this._eat('FOR');
+
+    this._eat('LEFT_PAREN');
+
+    const init = this._check('let') 
+      ? this.VariableDeclarationInit() 
+      : this._peek().type !== ';' ? this.Expression() : null; 
+
+    this._eat(';');
+
+    const test = this._peek().type !== ';' ? this.Expression() : null;
+
+    this._eat(';')
+
+    const update = this._peek().type !== 'RIGHT_PAREN' ? this.Expression() : null;
+
+    this._eat('RIGHT_PAREN');
+
+    const body = this.Statement();
+    
+    return {
+      type: "ForStatement",
+      init,
+      test,
+      update,
+      body,
     };
   }
 
@@ -204,32 +237,38 @@ class Parser {
     }
   }
 
-  VariableDeclarationStatement() {
+  VariableDeclarationInit() {
     this._eat('let');
 
     const variableDeclarationsList = this.VariableDeclarationsList();
 
-    this._eat(';');
-
     return {
-      type: "VariableDeclarationStatement",
+      type: "VariableDeclaration",
       declarations: variableDeclarationsList,
     };
   }
 
+  VariableDeclarationStatement() {
+    const variableDeclaration = this.VariableDeclarationInit();
+
+    this._eat(';');
+
+    return variableDeclaration;
+  }
+
   VariableDeclarationsList() {
-    const variableDeclarationsList = [this.VariableDeclaration()];
+    const variableDeclarationsList = [this.VariableDeclarator()];
 
     
 
     while(this._match(',')) {
-      variableDeclarationsList.push(this.VariableDeclaration());
+      variableDeclarationsList.push(this.VariableDeclarator());
     }
 
     return variableDeclarationsList;
   }
 
-  VariableDeclaration() {
+  VariableDeclarator() {
     const identifier = this.Identifier();
 
     let initializer = null;
@@ -241,7 +280,7 @@ class Parser {
     }
 
     return {
-      type: "VariableDeclaration",
+      type: "VariableDeclarator",
       id: identifier,
       init: initializer, 
     };

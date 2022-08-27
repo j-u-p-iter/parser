@@ -22,6 +22,8 @@ const Spec = [
 
   [/^do/, 'DO'],
 
+  [/^for/, "FOR"],
+
   [/^else/, 'ELSE'],
 
   [/^\d+/, 'NUMBER'],
