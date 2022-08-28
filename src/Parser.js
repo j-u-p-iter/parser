@@ -164,15 +164,15 @@ class Parser {
 
     const init = this._check('let') 
       ? this.VariableDeclarationInit() 
-      : this._peek().type !== ';' ? this.Expression() : null; 
+      : !this._check(';') ? this.Expression() : null; 
 
     this._eat(';');
 
-    const test = this._peek().type !== ';' ? this.Expression() : null;
+    const test = !this._check(';') ? this.Expression() : null;
 
     this._eat(';')
 
-    const update = this._peek().type !== 'RIGHT_PAREN' ? this.Expression() : null;
+    const update = !this._check('RIGHT_PAREN') ? this.Expression() : null;
 
     this._eat('RIGHT_PAREN');
 
