@@ -3,18 +3,19 @@ const assert = require('assert');
 const { Parser } = require('../src/Parser');
 
 const specs = [
-  require('./literalsTests.js'), 
-  require('./statementListTests.js'),
-  require('./blockStatementTests.js'),
-  require('./mathExpressionsTests.js'),
-  require('./unaryExpressionsTests.js'),
-  require('./groupingTests.js'),
-  require('./assignmentExpressionsTests.js'),
-  require('./variableDeclarationStatementsTests.js'),
-  require('./ifStatementTests.js'),
-  require('./whileStatementTests.js'),
-  require('./doWhileStatementTests.js'),
-  require('./forStatementTests.js'),
+  //require('./literalsTests.js'), 
+  //require('./statementListTests.js'),
+  //require('./blockStatementTests.js'),
+  //require('./mathExpressionsTests.js'),
+  //require('./unaryExpressionsTests.js'),
+  //require('./groupingTests.js'),
+  //require('./assignmentExpressionsTests.js'),
+  //require('./variableDeclarationTests.js'),
+  //require('./ifStatementTests.js'),
+  //require('./whileStatementTests.js'),
+  //require('./doWhileStatementTests.js'),
+  //require('./forStatementTests.js'),
+  require('./functionDeclaration.js'),
 ];
 
 const parser = new Parser();

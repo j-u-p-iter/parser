@@ -18,9 +18,15 @@ const Spec = [
 
   [/^if/, 'IF'],
 
+  [/^function/, 'FUNCTION'],
+
+  [/^return/, 'RETURN'],
+
   [/^while/, 'WHILE'],
 
   [/^do/, 'DO'],
+
+  [/^,/, "COMMA"],
 
   [/^for/, "FOR"],
 

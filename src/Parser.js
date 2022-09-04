@@ -121,11 +121,30 @@ class Parser {
         return this.ForStatement();
 
       case "let":
-        return this.VariableDeclarationStatement();
+        return this.VariableDeclaration();
+
+      case "FUNCTION":
+        return this.FunctionDeclaration();
+
+      case "RETURN":
+        return this.ReturnStatement();
 
       default:
         return this.ExpressionStatement();
     }
+  }
+
+  ReturnStatement() {
+    this._eat('RETURN');
+
+    const argument = this.Expression();  
+
+    this._eat(';');
+
+    return {
+      type: "ReturnStatement",
+      argument,
+    };
   }
 
   /**
@@ -248,7 +267,7 @@ class Parser {
     };
   }
 
-  VariableDeclarationStatement() {
+  VariableDeclaration() {
     const variableDeclaration = this.VariableDeclarationInit();
 
     this._eat(';');
@@ -456,6 +475,45 @@ class Parser {
     return leftOperand;
   };
 
+  FunctionDeclaration() {
+    this._eat('FUNCTION');
+
+    return this.Function();
+  }
+
+  FunctionParamsList() {
+    this._eat('LEFT_PAREN');  
+    
+    const paramsList = [];
+
+    if (!this._check('RIGHT_PAREN')) {
+      do {
+        paramsList.push(
+          this.Identifier()
+        );
+      } while(this._check('COMMA'));
+
+      this._eat('RIGHT_PAREN');
+    }
+
+    return paramsList;
+  }
+
+  Function() {
+    const name = this.Identifier(); 
+
+    const params = this.FunctionParamsList();
+
+    const body = this.BlockStatement();
+
+    return {
+      type: "FunctionDeclaration",
+      name,
+      params,
+      body,
+    };
+  }
+
   ExpressionStatement() {
     const expressionStatement = {
       type: "ExpressionStatement",
@@ -661,7 +719,7 @@ class Parser {
    * Validates current token before
    *   returning it from the parser.
    */
-  _eat(tokenType) {
+  _eat(tokenType, errorMessage) {
     const nextToken = this._peek(); 
 
     if (nextToken == null) {
@@ -671,9 +729,7 @@ class Parser {
     }
 
     if (nextToken.type !== tokenType) {
-      throw new SyntaxError(
-        `Unexpected token: ${nextToken.type}, expected ${tokenType}`
-      );
+      throw new SyntaxError(`Unexpected token: ${nextToken.type}, expected ${tokenType}`);
     }
 
     /**
