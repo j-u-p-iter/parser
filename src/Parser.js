@@ -137,7 +137,7 @@ class Parser {
   ReturnStatement() {
     this._eat('RETURN');
 
-    const argument = this.Expression();  
+    const argument = !this._check(';') ? this.Expression() : null;  
 
     this._eat(';');
 
@@ -491,10 +491,10 @@ class Parser {
         paramsList.push(
           this.Identifier()
         );
-      } while(this._check('COMMA'));
-
-      this._eat('RIGHT_PAREN');
+      } while(this._match('COMMA'));
     }
+
+    this._eat('RIGHT_PAREN');
 
     return paramsList;
   }
@@ -539,7 +539,36 @@ class Parser {
       return this.UnaryNode(operator.value, argument);
     }
 
-    return this.PrimaryExpression();
+    return this.MemberExpression();
+  }
+
+  MemberExpression() {
+    const primaryExpression = this.PrimaryExpression(); 
+
+    let computed = null;
+    let property = null;
+
+    if (this._match('.')) {
+      computed = false;
+      property = this.Identifier();
+    }
+
+    if (this._match('[')) {
+      computed = true;
+      property = this.Expression();
+      this._eat(']');
+    }
+
+    if (property) {
+      return {
+        type: "MemberExpression",
+        object: primaryExpression,
+        computed,
+        property,
+      };
+    }
+
+    return primaryExpression;
   }
 
   PrimaryExpression() {
