@@ -543,32 +543,31 @@ class Parser {
   }
 
   MemberExpression() {
-    const primaryExpression = this.PrimaryExpression(); 
+    let memberExpression = this.PrimaryExpression(); 
 
-    let computed = null;
-    let property = null;
+    while(this._check('.') || this._check('[')) {
 
-    if (this._match('.')) {
-      computed = false;
-      property = this.Identifier();
+      if (this._match('.')) {
+        memberExpression = {
+          type: "MemberExpression",
+          object: memberExpression,
+          computed: false,
+          property: this.Identifier(),
+        }
+      }
+
+      if (this._match('[')) {
+        memberExpression = {
+          type: "MemberExpression",
+          object: memberExpression,
+          computed: true,
+          property: this.Expression(),
+        }
+        this._eat(']');
+      }
     }
 
-    if (this._match('[')) {
-      computed = true;
-      property = this.Expression();
-      this._eat(']');
-    }
-
-    if (property) {
-      return {
-        type: "MemberExpression",
-        object: primaryExpression,
-        computed,
-        property,
-      };
-    }
-
-    return primaryExpression;
+    return memberExpression;
   }
 
   PrimaryExpression() {
