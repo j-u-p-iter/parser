@@ -280,7 +280,7 @@ class Parser {
 
     
 
-    while(this._match(',')) {
+    while(this._match('COMMA')) {
       variableDeclarationsList.push(this.VariableDeclarator());
     }
 
@@ -539,14 +539,13 @@ class Parser {
       return this.UnaryNode(operator.value, argument);
     }
 
-    return this.MemberExpression();
+    return this.CallExpression();
   }
 
   MemberExpression() {
     let memberExpression = this.PrimaryExpression(); 
 
     while(this._check('.') || this._check('[')) {
-
       if (this._match('.')) {
         memberExpression = {
           type: "MemberExpression",
@@ -568,6 +567,40 @@ class Parser {
     }
 
     return memberExpression;
+  }
+
+  CallExpression() {
+    let callExpression = this.MemberExpression();
+
+    if (!this._check('LEFT_PAREN')) { 
+      return callExpression;
+    }
+
+    while (this._match('LEFT_PAREN')) {
+      const argumentList = this._check('RIGHT_PAREN') 
+        ? [] 
+        : this.ArgumentList();
+
+      callExpression = {
+        type: "CallExpression",
+        callee: callExpression,
+        arguments: argumentList,
+      }
+
+      this._eat('RIGHT_PAREN');
+    }
+
+    return callExpression;
+  }
+
+  ArgumentList() {
+    let argumentList = [];
+
+    do {
+      argumentList.push(this.Expression()) 
+    } while(this._match('COMMA'));
+
+    return argumentList;
   }
 
   PrimaryExpression() {
