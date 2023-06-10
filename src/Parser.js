@@ -23,7 +23,7 @@ const { Tokenizer } = require('./Tokenizer');
  *     - Program
  *     - NumericLiteral.
  *
- *   The methods are called the same way they are called in the grammar.
+ *   The methods are called the same way respective non-terminals are called in the grammar.
  *
  *   Parser returns AST tree. As result, each production of the grammar will be represented by the AST tree node.
  *
@@ -309,6 +309,10 @@ class Parser {
     return { type: "EmptyStatement" };
   }
 
+  /**
+   * BlockStatement => "{" StatementList "}";
+   *
+   */
   BlockStatement() {
     this._eat('{');
 
@@ -367,6 +371,11 @@ class Parser {
     return expression.type === 'Identifier';
   }
 
+  /**
+   * LogicalOrExpression => LogicalAndExpression (LOGICAL_OR_OPERATOR LobicalAndExpression)*;
+   * LOGICAL_OR_OPERATOR => "||";
+   *
+   */
   LogicalOrExpression() {
     let leftOperand = this.LogicalAndExpression();
 
@@ -385,6 +394,11 @@ class Parser {
     return leftOperand;
   }
 
+  /**
+   * LogicalAndExpression => EqualityExpression (LOGICAL_AND_OPERATOR EqualityExpression)*;
+   * LOGICAL_AND_OPERATOR => "&&";
+   *
+   */
   LogicalAndExpression() {
     let leftOperand = this.EqualityExpression();
 
@@ -403,6 +417,11 @@ class Parser {
     return leftOperand;
   }
 
+  /**
+   * EqualityExpression => ComparisonExpression (EQUALITY_OPERATOR ComparisonExpression)*;
+   * EQUALITY_OPERATOR => "==" | "!=";
+   *
+   */
   EqualityExpression() {
     let leftOperand = this.ComparisonExpression();
 
@@ -421,6 +440,11 @@ class Parser {
     return leftOperand;
   }
 
+  /**
+   * ComparisonExpression => AdditiveExpression (COMPARISON_OPERATOR AdditiveExpression)*
+   * COMPARISON_OPERATOR => ">" | ">=" | "<" | "<=";
+   *
+   */
   ComparisonExpression() {
     let leftOperand = this.AdditiveExpression();
 
@@ -439,6 +463,10 @@ class Parser {
     return leftOperand;
   }
 
+  /**
+   * AdditiveExpression => MultiplicativeExpression ((+|-) MultiplicativeExpression);
+   *
+   */
   AdditiveExpression() {
     let leftOperand = this.MultiplicativeExpression();
 
@@ -457,6 +485,10 @@ class Parser {
     return leftOperand;
   }
 
+  /**
+   * MultiplicativeExpression => UnaryExpression ((* | /) UnaryExpression);
+   *
+   */
   MultiplicativeExpression() {
     let leftOperand = this.UnaryExpression();
 
@@ -514,6 +546,12 @@ class Parser {
     };
   }
 
+  /**
+   * Create ExpressionStatementNode 
+   *   according to the grammar:
+   *
+   *   ExpressionStatement => Expression ";";
+   */
   ExpressionStatement() {
     const expressionStatement = {
       type: "ExpressionStatement",
@@ -530,6 +568,10 @@ class Parser {
     return expressionStatement;
   }
   
+  /**
+   * UnaryExpression => CallExpression | (("!" | "-") UnaryExpression)*;
+   *
+   */
   UnaryExpression() {
     const operator = this._match('ADDITIVE_OPERATOR', 'LOGICAL_NOT_OPERATOR');
 
@@ -682,6 +724,10 @@ class Parser {
   /**
    * Literal => NumericLiteral | StringLiteral | BooleanLiteral | NullLiteral;
    *
+   * NumbericLiteral => NUMBER;
+   * StringLiteral => STRING;
+   * BooleanLiteral => TRUE | FALSE;
+   * NullLiteral => NULL;
    *
    */
   Literal() {
@@ -705,6 +751,10 @@ class Parser {
     throw new SyntaxError('Literal: unexpected literal production.');
   }
 
+  /**
+   * NullLiteral => NULL;
+   *
+   */
   NullLiteral() {
     const token = this._eat('NULL');
 
@@ -740,6 +790,10 @@ class Parser {
     };
   }
 
+  /**
+   * BooleanLiteral => TRUE | FALSE;
+   *
+   */
   BooleanLiteral(value) {
     this._eat(value ? 'TRUE' : 'FALSE');
 

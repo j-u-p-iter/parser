@@ -114,12 +114,17 @@ class Tokenizer {
     return this._cursor < this._string.length;
   }
 
+  /**
+   * If the cursor reaches the end of a string,
+   *   it means that we reached the end of file (EOF).
+   *
+   */
   isEOF() {
     return this._cursor === this._string.length;
   }
 
   /**
-   * Obrains next token.
+   * Obtains next token.
    *
    */
   getNextToken() {
@@ -132,10 +137,21 @@ class Tokenizer {
     for (const [regexpPattern, tokenType] of Spec) {
       const matchedValue = this.match(regexpPattern, string);
 
+      /**
+       * If there is no match for the current regexp pattern,
+       *   search new token for the next regexp pattern.
+       *
+       */
       if (matchedValue === null) {
         continue;
       }
 
+      /**
+       * If there is no token for the 
+       *   current regexp pattern, just skip the matched value
+       *   and search for new token.
+       *
+       */
       if (tokenType === null) {
         return this.getNextToken();  
       }
@@ -146,6 +162,12 @@ class Tokenizer {
       };
     }
 
+    /**
+     * If we went trough the whole string and haven't found 
+     *   matched value, the string contains invalid substring,
+     *   substring which can't be recognised by the parser..
+     *
+     */
     throw new SyntaxError(`Unexpected token: ${string[0]}`);
   }
 
