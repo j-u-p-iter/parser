@@ -1,80 +1,80 @@
+import { TokenType, Token } from './types';
+
 /**
  * Tokenizer spec
  *
  */
 
-const Spec = [
+const Spec: [RegExp, null | TokenType][] = [
   [/^\s+/, null],
 
   [/^\/\/.*/, null],
 
   [/^\/\*([\s\S]*?)\*\//, null],
 
-  [/^;/, ';'],
+  [/^;/, TokenType.Semicolon],
 
-  [/^{/, '{'],
+  [/^{/, TokenType.LeftCurlyBrace],
 
-  [/^}/, '}'],
+  [/^}/, TokenType.RightCurlyBrace],
 
-  [/^if/, 'IF'],
+  [/^if/, TokenType.If],
 
-  [/^function/, 'FUNCTION'],
+  [/^function/, TokenType.Function],
 
-  [/^return/, 'RETURN'],
+  [/^return/, TokenType.Return],
 
-  [/^while/, 'WHILE'],
+  [/^while/, TokenType.While],
 
-  [/^do/, 'DO'],
+  [/^do/, TokenType.Do],
 
-  [/^,/, "COMMA"],
+  [/^for/, TokenType.For],
 
-  [/^for/, "FOR"],
+  [/^else/, TokenType.Else],
 
-  [/^else/, 'ELSE'],
+  [/^\d+/, TokenType.Number],
 
-  [/^\d+/, 'NUMBER'],
+  [/^\blet\b/, TokenType.Let],
 
-  [/^\blet\b/, 'let'],
+  [/^true/, TokenType.True],
 
-  [/^true/, 'TRUE'],
+  [/^false/, TokenType.False],
 
-  [/^false/, 'FALSE'],
+  [/^null/, TokenType.Null],
 
-  [/^null/, 'NULL'],
+  [/^[a-zA-Z_]+\w*/, TokenType.Identifier],
 
-  [/^[a-zA-Z_]+\w*/, 'IDENTIFIER'],
+  [/^&&/, TokenType.LogicalAnd],
 
-  [/^&&/, 'LOGICAL_AND'],
+  [/^\|\|/, TokenType.LogicalOr],
 
-  [/^\|\|/, 'LOGICAL_OR'],
+  [/^[\+\-\*]=/, TokenType.ComplexAssignmentOperator],
 
-  [/^[\+\-\*]=/, 'COMPLEX_ASSIGNMENT_OPERATOR'],
+  [/^[+-]/, TokenType.AdditiveOperator],
 
-  [/^[+-]/, 'ADDITIVE_OPERATOR'],
+  [/^[=!]=/, TokenType.EqualityOperator],
 
-  [/^[=!]=/, 'EQUALITY_OPERATOR'],
+  [/^=/, TokenType.SimpleAssignmentOperator],
 
-  [/^=/, 'SIMPLE_ASSIGNMENT_OPERATOR'],
+  [/^[<|>]=?/, TokenType.ComparisonOperator],
 
-  [/^[<|>]=?/, 'COMPARISON_OPERATOR'],
+  [/^[*|/]/, TokenType.MultiplicativeOperator],
 
-  [/^[*|/]/, 'MULTIPLICATIVE_OPERATOR'],
+  [/^,/, TokenType.Comma],
 
-  [/^,/, ','],
+  [/^\./, TokenType.Dot],
 
-  [/^\./, '.'],
+  [/^\[/, TokenType.LeftSquareBracket],
+  [/^\]/, TokenType.RightSquareBracket],
 
-  [/^\[/, '['],
-  [/^\]/, ']'],
+  [/^\(/, TokenType.LeftParen],
 
-  [/^\(/, 'LEFT_PAREN'],
+  [/^\)/, TokenType.RightParen],
 
-  [/^\)/, 'RIGHT_PAREN'],
+  [/^!/, TokenType.LogicalNotOperator],
 
-  [/^!/, 'LOGICAL_NOT_OPERATOR'],
-
-  [/^"[^"]*"/, 'STRING'],
-  [/^'[^']*'/, 'STRING'],
+  [/^"[^"]*"/, TokenType.String],
+  [/^'[^']*'/, TokenType.String],
 ];
 
 /**
@@ -96,21 +96,23 @@ const Spec = [
  *   "getNextToken" method does exactly such a thing.
  */
 
-class Tokenizer {
+export class Tokenizer {
+  private _cursor: number = 0;
+  private _string: string = '';
+
   /**
    * Initializes the string.
    *
    */
-  init(string) {
+  init(string: string) {
     this._string = string;
-    this._cursor = 0;
   }
 
   /**
    * Whether we still have more tokens
    *
    */
-  hasMoreTokens() {
+  hasMoreTokens(): boolean {
     return this._cursor < this._string.length;
   }
 
@@ -119,7 +121,7 @@ class Tokenizer {
    *   it means that we reached the end of file (EOF).
    *
    */
-  isEOF() {
+  isEOF(): boolean {
     return this._cursor === this._string.length;
   }
 
@@ -127,7 +129,7 @@ class Tokenizer {
    * Obtains next token.
    *
    */
-  getNextToken() {
+  getNextToken(): Token | null {
     if (!this.hasMoreTokens()) {
       return null;
     }
@@ -171,7 +173,7 @@ class Tokenizer {
     throw new SyntaxError(`Unexpected token: ${string[0]}`);
   }
 
-  match(regexpPattern, string) {
+  match(regexpPattern: RegExp, string: string): string | null {
     const match = regexpPattern.exec(string);
 
     if (!match) {
@@ -183,7 +185,3 @@ class Tokenizer {
     return match[0];
   }
 }
-
-module.exports = {
-  Tokenizer,
-};
