@@ -3,7 +3,7 @@ const { Parser } = require('../src/Parser');
 const parser = new Parser();
 
 const program = `    
-callMethod(x, y)();
+"1"(x, y)();
 `;
 
 const ast = parser.parse(program);

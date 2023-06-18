@@ -3,7 +3,8 @@
  *
  */
 
-const { Tokenizer } = require('./Tokenizer');
+import { Tokenizer } from './Tokenizer';
+import { TokenType, Token } from './types';
 
 /**
  *
@@ -43,9 +44,12 @@ const { Tokenizer } = require('./Tokenizer');
  *   };
  */
 
-class Parser {
+export class Parser {
+  private _string: string = '';
+  private _tokenizer: Tokenizer;
+  private _lookahead: Token | null = null;
+
   constructor() {
-    this._string = '';
     this._tokenizer = new Tokenizer();
   }
 
@@ -53,7 +57,7 @@ class Parser {
    * Parse a string inti an AST
    *
    */
-  parse(string) {
+  parse(string: string) {
     this._string = string;
 
     this._tokenizer.init(this._string);
@@ -82,7 +86,7 @@ class Parser {
    * StringLiteral       => STRING;
    *
    */
-  Program() {
+  Program(): any {
     return {
       type: 'Program', 
       body: this.StatementList(),
@@ -90,43 +94,43 @@ class Parser {
   }
 
 
-  StatementList() {
+  StatementList(): any {
     let statementList = [];
 
-    while(this._peek() !== null && !this._check('}')) {
+    while(this._peek() !== null && !this._check(TokenType.RightCurlyBrace)) {
       statementList.push(this.Statement());
     }
 
     return statementList;
   }
 
-  Statement() {
-    switch(this._peek().type) {
-      case ';':
+  Statement(): any {
+    switch(this._peek()!.type) {
+      case TokenType.Semicolon:
         return this.EmptyStatement();
 
-      case '{':
+      case TokenType.LeftCurlyBrace:
         return this.BlockStatement();
 
-      case 'IF':
+      case TokenType.If:
         return this.IfStatement();
 
-      case 'WHILE':
+      case TokenType.While:
         return this.WhileStatement();
 
-      case 'DO':
+      case TokenType.Do:
         return this.DoWhileStatement();
 
-      case "FOR":
+      case TokenType.For:
         return this.ForStatement();
 
-      case "let":
+      case TokenType.Let:
         return this.VariableDeclaration();
 
-      case "FUNCTION":
+      case TokenType.Function:
         return this.FunctionDeclaration();
 
-      case "RETURN":
+      case TokenType.Return:
         return this.ReturnStatement();
 
       default:
@@ -134,12 +138,12 @@ class Parser {
     }
   }
 
-  ReturnStatement() {
-    this._eat('RETURN');
+  ReturnStatement(): any {
+    this._eat(TokenType.Return);
 
-    const argument = !this._check(';') ? this.Expression() : null;  
+    const argument = !this._check(TokenType.Semicolon) ? this.Expression() : null;  
 
-    this._eat(';');
+    this._eat(TokenType.Semicolon);
 
     return {
       type: "ReturnStatement",
@@ -151,20 +155,20 @@ class Parser {
    * IfStatement => "if" "(" Expression ")" Statement ("else" Statement)?
    *
    */
-  IfStatement() {
-    this._eat('IF');
+  IfStatement(): any {
+    this._eat(TokenType.If);
 
-    this._eat('LEFT_PAREN');
+    this._eat(TokenType.LeftParen);
 
     const test = this.Expression(); 
 
-    this._eat('RIGHT_PAREN');
+    this._eat(TokenType.RightParen);
 
     const consequent = this.Statement(); 
 
     let alternate = null;
 
-    if (this._match('ELSE')) {
+    if (this._match(TokenType.Else)) {
       alternate = this.Statement(); 
     }
 
@@ -176,24 +180,24 @@ class Parser {
     };
   }
 
-  ForStatement() {
-    this._eat('FOR');
+  ForStatement(): any {
+    this._eat(TokenType.For);
 
-    this._eat('LEFT_PAREN');
+    this._eat(TokenType.LeftParen);
 
-    const init = this._check('let') 
+    const init = this._check(TokenType.Let) 
       ? this.VariableDeclarationInit() 
-      : !this._check(';') ? this.Expression() : null; 
+      : !this._check(TokenType.Semicolon) ? this.Expression() : null; 
 
-    this._eat(';');
+    this._eat(TokenType.Semicolon);
 
-    const test = !this._check(';') ? this.Expression() : null;
+    const test = !this._check(TokenType.Semicolon) ? this.Expression() : null;
 
-    this._eat(';')
+    this._eat(TokenType.Semicolon)
 
-    const update = !this._check('RIGHT_PAREN') ? this.Expression() : null;
+    const update = !this._check(TokenType.RightParen) ? this.Expression() : null;
 
-    this._eat('RIGHT_PAREN');
+    this._eat(TokenType.RightParen);
 
     const body = this.Statement();
     
@@ -211,14 +215,14 @@ class Parser {
    *   "while" "(" Expression ")" Statement;
    *
    */
-  WhileStatement() {
-    this._eat('WHILE');
+  WhileStatement(): any {
+    this._eat(TokenType.While);
 
-    this._eat('LEFT_PAREN');
+    this._eat(TokenType.LeftParen);
 
     const test = this.Expression();
 
-    this._eat('RIGHT_PAREN');
+    this._eat(TokenType.RightParen);
 
     const body = this.Statement();
 
@@ -234,20 +238,20 @@ class Parser {
    *   "do" Statement "while" "(" Expression ")" ";";
    *
    */
-  DoWhileStatement() {
-    this._eat("DO");
+  DoWhileStatement(): any {
+    this._eat(TokenType.Do);
 
     const body = this.Statement();
 
-    this._eat("WHILE");
+    this._eat(TokenType.While);
 
-    this._eat("LEFT_PAREN");
+    this._eat(TokenType.LeftParen);
 
     const test = this.Expression();
 
-    this._eat("RIGHT_PAREN");
+    this._eat(TokenType.RightParen);
 
-    this._eat(";");
+    this._eat(TokenType.Semicolon);
 
     return {
       type: "DoWhileStatement",
@@ -256,8 +260,8 @@ class Parser {
     }
   }
 
-  VariableDeclarationInit() {
-    this._eat('let');
+  VariableDeclarationInit(): any {
+    this._eat(TokenType.Let);
 
     const variableDeclarationsList = this.VariableDeclarationsList();
 
@@ -267,33 +271,33 @@ class Parser {
     };
   }
 
-  VariableDeclaration() {
+  VariableDeclaration(): any {
     const variableDeclaration = this.VariableDeclarationInit();
 
-    this._eat(';');
+    this._eat(TokenType.Semicolon);
 
     return variableDeclaration;
   }
 
-  VariableDeclarationsList() {
+  VariableDeclarationsList(): any {
     const variableDeclarationsList = [this.VariableDeclarator()];
 
     
 
-    while(this._match('COMMA')) {
+    while(this._match(TokenType.Comma)) {
       variableDeclarationsList.push(this.VariableDeclarator());
     }
 
     return variableDeclarationsList;
   }
 
-  VariableDeclarator() {
+  VariableDeclarator(): any {
     const identifier = this.Identifier();
 
     let initializer = null;
 
-    if (this._check('SIMPLE_ASSIGNMENT_OPERATOR')) {
-      this._eat('SIMPLE_ASSIGNMENT_OPERATOR');
+    if (this._check(TokenType.SimpleAssignmentOperator)) {
+      this._eat(TokenType.SimpleAssignmentOperator);
 
       initializer = this.Expression();
     }
@@ -305,7 +309,7 @@ class Parser {
     };
   }
 
-  EmptyStatement() {
+  EmptyStatement(): any {
     return { type: "EmptyStatement" };
   }
 
@@ -313,12 +317,12 @@ class Parser {
    * BlockStatement => "{" StatementList "}";
    *
    */
-  BlockStatement() {
-    this._eat('{');
+  BlockStatement(): any {
+    this._eat(TokenType.LeftCurlyBrace);
 
     const statementList = this.StatementList();
 
-    this._eat('}');
+    this._eat(TokenType.RightCurlyBrace);
 
     return {
       type: 'BlockStatement',
@@ -326,7 +330,7 @@ class Parser {
     }  
   }
 
-  Expression() {
+  Expression(): any {
     return this.AssignmentExpression();
   }
 
@@ -340,12 +344,12 @@ class Parser {
    *
    * AssignmentExpression => IDENTIFIER ASSIGNMENT_OPERATOR AssignmentExpression | LogicalORExpression
    */
-  AssignmentExpression() {
+  AssignmentExpression(): any {
     const expression = this.LogicalOrExpression();
 
     const assignmentOperator = this._match(
-      'SIMPLE_ASSIGNMENT_OPERATOR', 
-      'COMPLEX_ASSIGNMENT_OPERATOR'
+      TokenType.SimpleAssignmentOperator, 
+      TokenType.ComplexAssignmentOperator
     );
 
     if (assignmentOperator) {
@@ -367,7 +371,7 @@ class Parser {
     return expression;
   }
 
-  _isIdentifier(expression) {
+  _isIdentifier(expression: any): boolean {
     return expression.type === 'Identifier';
   }
 
@@ -376,11 +380,11 @@ class Parser {
    * LOGICAL_OR_OPERATOR => "||";
    *
    */
-  LogicalOrExpression() {
+  LogicalOrExpression(): any {
     let leftOperand = this.LogicalAndExpression();
 
-    while(this._check('LOGICAL_OR')) {
-      const operator = this._eat('LOGICAL_OR');
+    while(this._check(TokenType.LogicalOr)) {
+      const operator = this._eat(TokenType.LogicalOr);
 
       const rightOperand = this.LogicalAndExpression();
 
@@ -399,11 +403,11 @@ class Parser {
    * LOGICAL_AND_OPERATOR => "&&";
    *
    */
-  LogicalAndExpression() {
+  LogicalAndExpression(): any {
     let leftOperand = this.EqualityExpression();
 
-    while(this._check('LOGICAL_AND')) {
-      const operator = this._eat('LOGICAL_AND');
+    while(this._check(TokenType.LogicalAnd)) {
+      const operator = this._eat(TokenType.LogicalAnd);
 
       const rightOperand = this.EqualityExpression();
 
@@ -422,11 +426,11 @@ class Parser {
    * EQUALITY_OPERATOR => "==" | "!=";
    *
    */
-  EqualityExpression() {
+  EqualityExpression(): any {
     let leftOperand = this.ComparisonExpression();
 
-    while (this._check('EQUALITY_OPERATOR')) {
-      const operator = this._eat('EQUALITY_OPERATOR');
+    while (this._check(TokenType.EqualityOperator)) {
+      const operator = this._eat(TokenType.EqualityOperator);
 
       const rightOperand = this.ComparisonExpression();
 
@@ -445,11 +449,11 @@ class Parser {
    * COMPARISON_OPERATOR => ">" | ">=" | "<" | "<=";
    *
    */
-  ComparisonExpression() {
+  ComparisonExpression(): any {
     let leftOperand = this.AdditiveExpression();
 
-    while (this._check('COMPARISON_OPERATOR')) {
-      const operator = this._eat('COMPARISON_OPERATOR');
+    while (this._check(TokenType.ComparisonOperator)) {
+      const operator = this._eat(TokenType.ComparisonOperator);
 
       const rightOperand = this.AdditiveExpression();
 
@@ -467,11 +471,11 @@ class Parser {
    * AdditiveExpression => MultiplicativeExpression ((+|-) MultiplicativeExpression);
    *
    */
-  AdditiveExpression() {
+  AdditiveExpression(): any {
     let leftOperand = this.MultiplicativeExpression();
 
-    while (this._check('ADDITIVE_OPERATOR')) {
-      const operator = this._eat('ADDITIVE_OPERATOR');
+    while (this._check(TokenType.AdditiveOperator)) {
+      const operator = this._eat(TokenType.AdditiveOperator);
 
       const rightOperand = this.MultiplicativeExpression();
 
@@ -489,11 +493,11 @@ class Parser {
    * MultiplicativeExpression => UnaryExpression ((* | /) UnaryExpression);
    *
    */
-  MultiplicativeExpression() {
+  MultiplicativeExpression(): any {
     let leftOperand = this.UnaryExpression();
 
-    while(this._check('MULTIPLICATIVE_OPERATOR')) {
-      const operator = this._eat('MULTIPLICATIVE_OPERATOR');
+    while(this._check(TokenType.MultiplicativeOperator)) {
+      const operator = this._eat(TokenType.MultiplicativeOperator);
 
       const rightOperand = this.UnaryExpression();
 
@@ -507,31 +511,31 @@ class Parser {
     return leftOperand;
   };
 
-  FunctionDeclaration() {
-    this._eat('FUNCTION');
+  FunctionDeclaration(): any {
+    this._eat(TokenType.Function);
 
     return this.Function();
   }
 
-  FunctionParamsList() {
-    this._eat('LEFT_PAREN');  
+  FunctionParamsList(): any {
+    this._eat(TokenType.LeftParen);  
     
     const paramsList = [];
 
-    if (!this._check('RIGHT_PAREN')) {
+    if (!this._check(TokenType.RightParen)) {
       do {
         paramsList.push(
           this.Identifier()
         );
-      } while(this._match('COMMA'));
+      } while(this._match(TokenType.Comma));
     }
 
-    this._eat('RIGHT_PAREN');
+    this._eat(TokenType.RightParen);
 
     return paramsList;
   }
 
-  Function() {
+  Function(): any {
     const name = this.Identifier(); 
 
     const params = this.FunctionParamsList();
@@ -552,7 +556,7 @@ class Parser {
    *
    *   ExpressionStatement => Expression ";";
    */
-  ExpressionStatement() {
+  ExpressionStatement(): any {
     const expressionStatement = {
       type: "ExpressionStatement",
       expression: this.Expression(),
@@ -563,7 +567,7 @@ class Parser {
      *   instead of keeping it in the variable.
      *
      */
-    this._eat(';');
+    this._eat(TokenType.Semicolon);
 
     return expressionStatement;
   }
@@ -572,8 +576,8 @@ class Parser {
    * UnaryExpression => CallExpression | (("!" | "-") UnaryExpression)*;
    *
    */
-  UnaryExpression() {
-    const operator = this._match('ADDITIVE_OPERATOR', 'LOGICAL_NOT_OPERATOR');
+  UnaryExpression(): any {
+    const operator = this._match(TokenType.AdditiveOperator, TokenType.LogicalNotOperator);
 
     if (operator) {
       const argument = this.UnaryExpression();
@@ -584,11 +588,11 @@ class Parser {
     return this.CallExpression();
   }
 
-  MemberExpression() {
+  MemberExpression(): any {
     let memberExpression = this.PrimaryExpression(); 
 
-    while(this._check('.') || this._check('[')) {
-      if (this._match('.')) {
+    while(this._check(TokenType.Dot) || this._check(TokenType.LeftSquareBracket)) {
+      if (this._match(TokenType.Dot)) {
         memberExpression = {
           type: "MemberExpression",
           object: memberExpression,
@@ -597,14 +601,14 @@ class Parser {
         }
       }
 
-      if (this._match('[')) {
+      if (this._match(TokenType.LeftSquareBracket)) {
         memberExpression = {
           type: "MemberExpression",
           object: memberExpression,
           computed: true,
           property: this.Expression(),
         }
-        this._eat(']');
+        this._eat(TokenType.RightSquareBracket);
       }
     }
 
@@ -614,12 +618,12 @@ class Parser {
   CallExpression() {
     let callExpression = this.MemberExpression();
 
-    if (!this._check('LEFT_PAREN')) { 
+    if (!this._check(TokenType.LeftParen)) { 
       return callExpression;
     }
 
-    while (this._match('LEFT_PAREN')) {
-      const argumentList = this._check('RIGHT_PAREN') 
+    while (this._match(TokenType.LeftParen)) {
+      const argumentList = this._check(TokenType.RightParen) 
         ? [] 
         : this.ArgumentList();
 
@@ -629,34 +633,34 @@ class Parser {
         arguments: argumentList,
       }
 
-      this._eat('RIGHT_PAREN');
+      this._eat(TokenType.RightParen);
     }
 
     return callExpression;
   }
 
-  ArgumentList() {
+  ArgumentList(): any {
     let argumentList = [];
 
     do {
       argumentList.push(this.Expression()) 
-    } while(this._match('COMMA'));
+    } while(this._match(TokenType.Comma));
 
     return argumentList;
   }
 
-  PrimaryExpression() {
-    switch(this._lookahead.type) {
-      case 'LEFT_PAREN':
-        this._eat('LEFT_PAREN');
+  PrimaryExpression(): any {
+    switch(this._lookahead!.type) {
+      case TokenType.LeftParen:
+        this._eat(TokenType.LeftParen);
 
         const expression = this.Expression();
 
-        this._eat('RIGHT_PAREN');
+        this._eat(TokenType.RightParen);
 
         return expression;
 
-      case 'IDENTIFIER':
+      case TokenType.Identifier:
         return this.Identifier();
 
       default:
@@ -664,7 +668,7 @@ class Parser {
     }
   }
 
-  UnaryNode(operator, argument) {
+  UnaryNode(operator: any, argument: any): any {
     return {
       type: "UnaryExpression",
       operator, 
@@ -693,7 +697,7 @@ class Parser {
    * The root (closest to the top) BinaryExpression will contain 9 + 5 (9 is the described above left operand).
    */
 
-  BinaryNode(leftOperand, operator, rightOperand) {
+  BinaryNode(leftOperand: any, operator: any, rightOperand: any): any {
     return {
       type: "BinaryExpression",
       operator,
@@ -702,7 +706,7 @@ class Parser {
     };
   }
   
-  LogicalNode(leftOperand, operator, rightOperand) {
+  LogicalNode(leftOperand: any, operator: any, rightOperand: any): any {
     return {
       type: "LogicalExpression",
       operator,
@@ -712,8 +716,8 @@ class Parser {
   }
 
 
-  Identifier() {
-    const token = this._eat('IDENTIFIER');
+  Identifier(): any {
+    const token = this._eat(TokenType.Identifier);
 
     return {
       type: "Identifier",
@@ -730,21 +734,21 @@ class Parser {
    * NullLiteral => NULL;
    *
    */
-  Literal() {
-    switch(this._peek().type) {
-      case 'NUMBER':
+  Literal(): any {
+    switch(this._peek()!.type) {
+      case TokenType.Number:
         return this.NumericLiteral();
 
-      case 'STRING':
+      case TokenType.String:
         return this.StringLiteral();
 
-      case 'TRUE':
+      case TokenType.True:
         return this.BooleanLiteral(true);
 
-      case 'FALSE':
+      case TokenType.False:
         return this.BooleanLiteral(false)
 
-      case 'NULL':
+      case TokenType.Null:
         return this.NullLiteral()
     }
 
@@ -755,8 +759,8 @@ class Parser {
    * NullLiteral => NULL;
    *
    */
-  NullLiteral() {
-    const token = this._eat('NULL');
+  NullLiteral(): any {
+    const token = this._eat(TokenType.Null);
 
     return {
       type: 'NullLiteral',
@@ -768,8 +772,8 @@ class Parser {
    * NumericLiteral => NUMBER;
    *
    */
-  NumericLiteral() {
-    const token = this._eat('NUMBER');
+  NumericLiteral(): any {
+    const token = this._eat(TokenType.Number);
 
     return {
       type: 'NumericLiteral',
@@ -781,8 +785,8 @@ class Parser {
    * StringLiteral => STRING;
    *
    */
-  StringLiteral() {
-    const token = this._eat('STRING');
+  StringLiteral(): any {
+    const token = this._eat(TokenType.String);
 
     return {
       type: 'StringLiteral',
@@ -794,8 +798,8 @@ class Parser {
    * BooleanLiteral => TRUE | FALSE;
    *
    */
-  BooleanLiteral(value) {
-    this._eat(value ? 'TRUE' : 'FALSE');
+  BooleanLiteral(value: true | false): any {
+    this._eat(value ? TokenType.True : TokenType.False);
 
     return {
       type: "LogicalLiteral",
@@ -803,7 +807,7 @@ class Parser {
     }
   }
 
-  _match(...operatorsTypes) {
+  _match(...operatorsTypes: TokenType[]): Token | null {
     for (const operatorType of operatorsTypes) {
       if (this._check(operatorType)) {
         return this._eat(operatorType); 
@@ -813,20 +817,20 @@ class Parser {
     return null;
   }
 
-  _check(type) {
+  _check(type: TokenType): boolean {
     if(this._isEOF()) { return false; }
 
-    return this._peek().type === type;
+    return this._peek()!.type === type;
   }
 
-  _isEOF() {
+  _isEOF(): boolean {
     return this._tokenizer.isEOF();
   }
 
   /**
    * Looking ahead the next token.
    */
-  _peek() {
+  _peek(): Token | null {
     return this._lookahead;
   }
 
@@ -834,7 +838,7 @@ class Parser {
    * Validates current token before
    *   returning it from the parser.
    */
-  _eat(tokenType, errorMessage) {
+  _eat(tokenType: TokenType): Token {
     const nextToken = this._peek(); 
 
     if (nextToken == null) {
@@ -856,8 +860,4 @@ class Parser {
     
     return nextToken;
   }
-}
-
-module.exports = {
-  Parser,
 }
