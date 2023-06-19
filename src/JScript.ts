@@ -1,17 +1,30 @@
 import { Tokenizer } from './Tokenizer';
 import { Parser } from './Parser';
 import { readFile } from 'node:fs/promises';
+import { LineReader } from './LineReader';
 
 export class JScript {
+  private lineReader: LineReader;
+
+  constructor() {
+    this.lineReader = new LineReader();
+  }
+
   async main(args: string[]) {
     if (args.length > 1) {
-      console.log('Usage: script [script]')
+      console.log('Usage: script [script]');
+
       process.exit(1);
     } else {
-      if (args.length === 1) {
-        await this.runFile(args[0]);
-      } else {
-        this.runPrompt();
+      try {
+        if (args.length === 1) {
+          await this.runFile(args[0]);
+        } else {
+          await this.runPrompt();
+        }
+      } catch(error) {
+        console.error(error);
+        process.exit(1);
       }
     }
   }
@@ -22,15 +35,16 @@ export class JScript {
     try {
       fileContent = await readFile(filePath, { encoding: 'utf8' }); 
     } catch(error) {
-      console.error(`There is no such a file: ${filePath}`);
-      process.exit(1);
+      throw new Error(`There is no such a file: ${filePath}`);
     }
 
     this.runScript(fileContent);
   };
 
-  runPrompt() {
-    console.log('Running a prompt');
+  async runPrompt() {
+    const script = await this.lineReader.readLine();
+
+    this.runScript(script);
   }
 
   runScript(script: string) {
@@ -42,6 +56,7 @@ export class JScript {
 
     while(nextToken) {
       console.log(nextToken);
+
       nextToken = tokenizer.getNextToken();
     }
   }
