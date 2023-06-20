@@ -1,4 +1,5 @@
-import { TokenType, Token } from './types';
+import { TokenType } from './types';
+import { Token } from './Token';
 
 /**
  * Tokenizer spec
@@ -6,6 +7,8 @@ import { TokenType, Token } from './types';
  */
 
 const Spec: [RegExp, null | TokenType][] = [
+  [/^\n/, null],
+
   [/^\s+/, null],
 
   [/^\/\/.*/, null],
@@ -98,14 +101,15 @@ const Spec: [RegExp, null | TokenType][] = [
 
 export class Tokenizer {
   private _cursor: number = 0;
-  private _string: string = '';
+  private _source: string = '';
+  private _line: number = 1;
 
   /**
-   * Initializes the string.
+   * Initializes the source.
    *
    */
-  init(string: string) {
-    this._string = string;
+  init(source: string) {
+    this._source = source;
   }
 
   /**
@@ -113,7 +117,7 @@ export class Tokenizer {
    *
    */
   hasMoreTokens(): boolean {
-    return this._cursor < this._string.length;
+    return this._cursor < this._source.length;
   }
 
   /**
@@ -122,7 +126,7 @@ export class Tokenizer {
    *
    */
   isEOF(): boolean {
-    return this._cursor === this._string.length;
+    return this._cursor === this._source.length;
   }
 
   /**
@@ -134,10 +138,10 @@ export class Tokenizer {
       return null;
     }
 
-    const string = this._string.slice(this._cursor);
+    const source = this._source.slice(this._cursor);
 
     for (const [regexpPattern, tokenType] of Spec) {
-      const matchedValue = this.match(regexpPattern, string);
+      const matchedValue = this.match(regexpPattern, source);
 
       /**
        * If there is no match for the current regexp pattern,
@@ -158,10 +162,7 @@ export class Tokenizer {
         return this.getNextToken();  
       }
 
-      return {
-        type: tokenType,
-        value: matchedValue,
-      };
+      return new Token(tokenType, matchedValue, this._line);
     }
 
     /**
@@ -170,14 +171,18 @@ export class Tokenizer {
      *   substring which can't be recognised by the parser..
      *
      */
-    throw new SyntaxError(`Unexpected token: ${string[0]}`);
+    throw new SyntaxError(`Unexpected token: ${source[0]}`);
   }
 
-  match(regexpPattern: RegExp, string: string): string | null {
-    const match = regexpPattern.exec(string);
+  match(regexpPattern: RegExp, source: string): string | null {
+    const match = regexpPattern.exec(source);
 
     if (!match) {
       return null;
+    }
+
+    if (match[0] === '\n') {
+      this._line++;
     }
 
     this._cursor += match[0].length;

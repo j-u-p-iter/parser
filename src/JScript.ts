@@ -57,6 +57,8 @@ export class JScript {
     while(nextToken) {
       console.log(nextToken);
 
+      console.log(`${nextToken}`);
+
       nextToken = tokenizer.getNextToken();
     }
   }

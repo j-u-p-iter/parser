@@ -57,8 +57,3 @@ export enum TokenType {
   LogicalNotOperator = 'LOGICAL_NOT_OPERATOR',
   String = 'STRING',
 };
-
-export type Token = {
-  type: TokenType;
-  value: string;
-};

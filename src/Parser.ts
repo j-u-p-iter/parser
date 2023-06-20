@@ -4,7 +4,8 @@
  */
 
 import { Tokenizer } from './Tokenizer';
-import { TokenType, Token } from './types';
+import { TokenType } from './types';
+import { Token } from './Token';
 
 /**
  *
@@ -353,7 +354,7 @@ export class Parser {
     );
 
     if (assignmentOperator) {
-      const assignmentOperatorValue = assignmentOperator.value;
+      const assignmentOperatorValue = assignmentOperator.lexeme;
 
       // In case EqualityExpression deriviated to simple Identifier node.
       if (this._isIdentifier(expression)) {
@@ -390,7 +391,7 @@ export class Parser {
 
       leftOperand = this.LogicalNode(
         leftOperand, 
-        operator.value, 
+        operator.lexeme, 
         rightOperand
       );
     }
@@ -413,7 +414,7 @@ export class Parser {
 
       leftOperand = this.LogicalNode(
         leftOperand, 
-        operator.value, 
+        operator.lexeme, 
         rightOperand
       );
     }
@@ -436,7 +437,7 @@ export class Parser {
 
       leftOperand = this.BinaryNode(
         leftOperand, 
-        operator.value, 
+        operator.lexeme, 
         rightOperand
       );
     }
@@ -459,7 +460,7 @@ export class Parser {
 
       leftOperand = this.BinaryNode(
         leftOperand, 
-        operator.value, 
+        operator.lexeme, 
         rightOperand
       );
     }
@@ -481,7 +482,7 @@ export class Parser {
 
       leftOperand = this.BinaryNode(
         leftOperand, 
-        operator.value, 
+        operator.lexeme, 
         rightOperand
       );
     }
@@ -503,7 +504,7 @@ export class Parser {
 
       leftOperand = this.BinaryNode(
         leftOperand, 
-        operator.value, 
+        operator.lexeme, 
         rightOperand
       );
     }
@@ -582,7 +583,7 @@ export class Parser {
     if (operator) {
       const argument = this.UnaryExpression();
 
-      return this.UnaryNode(operator.value, argument);
+      return this.UnaryNode(operator.lexeme, argument);
     }
 
     return this.CallExpression();
@@ -721,7 +722,7 @@ export class Parser {
 
     return {
       type: "Identifier",
-      name: token.value, 
+      name: token.lexeme, 
     }
   };
 
@@ -777,7 +778,7 @@ export class Parser {
 
     return {
       type: 'NumericLiteral',
-      value: Number(token.value),
+      value: Number(token.lexeme),
     };
   }
 
@@ -790,7 +791,7 @@ export class Parser {
 
     return {
       type: 'StringLiteral',
-      value: token.value.slice(1, -1),
+      value: token.lexeme.slice(1, -1),
     };
   }
 
