@@ -101,14 +101,32 @@ const Spec: [RegExp, null | TokenType][] = [
 
 export class Tokenizer {
   private _cursor: number = 0;
+
   private _source: string = '';
+
   private _line: number = 1;
+
+  private match(regexpPattern: RegExp, source: string): string | null {
+    const match = regexpPattern.exec(source);
+
+    if (!match) {
+      return null;
+    }
+
+    if (match[0] === '\n') {
+      this._line++;
+    }
+
+    this._cursor += match[0].length;
+
+    return match[0];
+  }
 
   /**
    * Initializes the source.
    *
    */
-  init(source: string) {
+  public init(source: string) {
     this._source = source;
   }
 
@@ -116,7 +134,7 @@ export class Tokenizer {
    * Whether we still have more tokens
    *
    */
-  hasMoreTokens(): boolean {
+  public hasMoreTokens(): boolean {
     return this._cursor < this._source.length;
   }
 
@@ -125,7 +143,7 @@ export class Tokenizer {
    *   it means that we reached the end of file (EOF).
    *
    */
-  isEOF(): boolean {
+  public isEOF(): boolean {
     return this._cursor === this._source.length;
   }
 
@@ -133,7 +151,7 @@ export class Tokenizer {
    * Obtains next token.
    *
    */
-  getNextToken(): Token | null {
+  public getNextToken(): Token | null {
     if (!this.hasMoreTokens()) {
       return null;
     }
@@ -174,19 +192,21 @@ export class Tokenizer {
     throw new SyntaxError(`Unexpected token: ${source[0]}`);
   }
 
-  match(regexpPattern: RegExp, source: string): string | null {
-    const match = regexpPattern.exec(source);
+  public getAllTokens(): Token[] {
+    const tokens: Token[] = [];
 
-    if (!match) {
-      return null;
-    }
+    let nextToken = this.getNextToken();
 
-    if (match[0] === '\n') {
-      this._line++;
-    }
+    if (!nextToken) { return tokens; }
 
-    this._cursor += match[0].length;
+    tokens.push(nextToken);
 
-    return match[0];
+    while(nextToken) {
+      nextToken = this.getNextToken();
+
+      nextToken && tokens.push(nextToken);
+    };
+
+    return tokens; 
   }
 }

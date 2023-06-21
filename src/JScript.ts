@@ -52,15 +52,7 @@ export class JScript {
 
     tokenizer.init(script);
 
-    let nextToken = tokenizer.getNextToken();
-
-    while(nextToken) {
-      console.log(nextToken);
-
-      console.log(`${nextToken}`);
-
-      nextToken = tokenizer.getNextToken();
-    }
+    console.log('All tokens:', tokenizer.getAllTokens());
   }
 }
 
