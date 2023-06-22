@@ -1,5 +1,6 @@
 import { TokenType } from './types';
 import { Token } from './Token';
+import errorReporter from './errorReporter';
 
 /**
  * Tokenizer spec
@@ -186,10 +187,14 @@ export class Tokenizer {
     /**
      * If we went trough the whole string and haven't found 
      *   matched value, the string contains invalid substring,
-     *   substring which can't be recognised by the parser..
+     *   substring which can't be recognised by the parser.
      *
      */
-    throw new SyntaxError(`Unexpected token: ${source[0]}`);
+    errorReporter.report(this._line, `Unexpected token: ${source[0]}`);
+
+    this._cursor++;
+
+    return this.getNextToken();
   }
 
   public getAllTokens(): Token[] {

@@ -45,6 +45,8 @@ export class JScript {
     const script = await this.lineReader.readLine();
 
     this.runScript(script);
+
+    await this.runPrompt();
   }
 
   runScript(script: string) {
