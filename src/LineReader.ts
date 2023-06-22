@@ -8,6 +8,8 @@ export class LineReader {
     this.line = createInterface({ 
       input, 
       output,
+      prompt: "> ",
+      terminal: true,
     });
   }
 
