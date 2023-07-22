@@ -105,8 +105,6 @@ export class Tokenizer {
 
   private _source: string = '';
 
-  private _line: number = 1;
-
   private match(regexpPattern: RegExp, source: string): string | null {
     const match = regexpPattern.exec(source);
 
@@ -115,13 +113,19 @@ export class Tokenizer {
     }
 
     if (match[0] === '\n') {
-      this._line++;
+      this.line++;
     }
 
     this._cursor += match[0].length;
 
     return match[0];
   }
+
+  private report(line: number, message: string) {
+    errorReporter.report(line, '', message);
+  }
+
+  public line: number = 1;
 
   /**
    * Initializes the source.
@@ -181,7 +185,7 @@ export class Tokenizer {
         return this.getNextToken();  
       }
 
-      return new Token(tokenType, matchedValue, this._line);
+      return new Token(tokenType, matchedValue, this.line);
     }
 
     /**
@@ -190,7 +194,7 @@ export class Tokenizer {
      *   substring which can't be recognised by the parser.
      *
      */
-    errorReporter.report(this._line, `Unexpected token: ${source[0]}`);
+    this.report(this.line, `Unexpected token: ${source[0]}`);
 
     this._cursor++;
 

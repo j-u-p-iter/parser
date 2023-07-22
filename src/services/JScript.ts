@@ -1,7 +1,13 @@
-import { Tokenizer } from './Tokenizer';
-import { Parser } from './Parser';
 import { readFile } from 'node:fs/promises';
-import { LineReader } from './LineReader';
+import { Tokenizer } from '../Tokenizer';
+import { Parser } from '../Parser';
+import { LineReader } from '../LineReader';
+import { AstPrinter } from './AstPrinter';
+import { UnaryExprNode } from '../nodes/UnaryExprNode'
+import { BinaryExprNode } from '../nodes/BinaryExprNode'
+import { NumericLiteralNode } from '../nodes/NumericLiteralNode';
+import { TokenType } from '../types';
+import { Token } from '../Token';
 
 export class JScript {
   private lineReader: LineReader;
@@ -50,11 +56,17 @@ export class JScript {
   }
 
   runScript(script: string) {
-    const tokenizer = new Tokenizer();
+    const parser = new Parser();
 
-    tokenizer.init(script);
+    const expressionAst = parser.parse(script);
 
-    console.log('All tokens:', tokenizer.getAllTokens());
+    const astPrinter = new AstPrinter();
+
+    console.log(expressionAst);
+
+    if (expressionAst) {
+      astPrinter.print(expressionAst);
+    }
   }
 }
 

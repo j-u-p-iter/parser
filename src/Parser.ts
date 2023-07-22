@@ -6,6 +6,18 @@
 import { Tokenizer } from './Tokenizer';
 import { TokenType } from './types';
 import { Token } from './Token';
+import { UnaryExprNode } from './nodes/UnaryExprNode';
+import { BinaryExprNode } from './nodes/BinaryExprNode';
+import { LogicalExprNode } from './nodes/LogicalExprNode';
+import { NumericLiteralNode } from './nodes/NumericLiteralNode';
+import { StringLiteralNode } from './nodes/StringLiteralNode';
+import { BooleanLiteralNode } from './nodes/BooleanLiteralNode';
+import { NullLiteralNode } from './nodes/NullLiteralNode';
+import { ProgramNode } from './nodes/ProgramNode';
+import { ExpressionStatementNode } from './nodes/ExpressionStatementNode';
+import errorReporter from './errorReporter';
+
+class ParseError extends Error {}
 
 /**
  *
@@ -69,7 +81,11 @@ export class Parser {
      * Parsing, recursively starting from the main entry point,
      *   the Program.
      */
-    return this.Program();
+    try {
+      return this.Program();
+    } catch(error: any) {
+      return null;
+    }
   }
 
   /**
@@ -87,11 +103,8 @@ export class Parser {
    * StringLiteral       => STRING;
    *
    */
-  Program(): any {
-    return {
-      type: 'Program', 
-      body: this.StatementList(),
-    };
+  Program(): ProgramNode {
+    return new ProgramNode(this.StatementList());
   }
 
 
@@ -389,9 +402,9 @@ export class Parser {
 
       const rightOperand = this.LogicalAndExpression();
 
-      leftOperand = this.LogicalNode(
+      leftOperand = new LogicalExprNode(
         leftOperand, 
-        operator.lexeme, 
+        operator, 
         rightOperand
       );
     }
@@ -412,9 +425,9 @@ export class Parser {
 
       const rightOperand = this.EqualityExpression();
 
-      leftOperand = this.LogicalNode(
+      leftOperand = new LogicalExprNode(
         leftOperand, 
-        operator.lexeme, 
+        operator, 
         rightOperand
       );
     }
@@ -435,9 +448,9 @@ export class Parser {
 
       const rightOperand = this.ComparisonExpression();
 
-      leftOperand = this.BinaryNode(
+      leftOperand = new BinaryExprNode(
         leftOperand, 
-        operator.lexeme, 
+        operator, 
         rightOperand
       );
     }
@@ -458,9 +471,9 @@ export class Parser {
 
       const rightOperand = this.AdditiveExpression();
 
-      leftOperand = this.BinaryNode(
+      leftOperand = new BinaryExprNode(
         leftOperand, 
-        operator.lexeme, 
+        operator, 
         rightOperand
       );
     }
@@ -469,7 +482,8 @@ export class Parser {
   }
 
   /**
-   * AdditiveExpression => MultiplicativeExpression ((+|-) MultiplicativeExpression);
+   * AdditiveExpression => 
+   *   MultiplicativeExpression ((+|-) MultiplicativeExpression);
    *
    */
   AdditiveExpression(): any {
@@ -480,9 +494,9 @@ export class Parser {
 
       const rightOperand = this.MultiplicativeExpression();
 
-      leftOperand = this.BinaryNode(
+      leftOperand = new BinaryExprNode(
         leftOperand, 
-        operator.lexeme, 
+        operator, 
         rightOperand
       );
     }
@@ -502,9 +516,9 @@ export class Parser {
 
       const rightOperand = this.UnaryExpression();
 
-      leftOperand = this.BinaryNode(
+      leftOperand = new BinaryExprNode(
         leftOperand, 
-        operator.lexeme, 
+        operator, 
         rightOperand
       );
     }
@@ -557,11 +571,8 @@ export class Parser {
    *
    *   ExpressionStatement => Expression ";";
    */
-  ExpressionStatement(): any {
-    const expressionStatement = {
-      type: "ExpressionStatement",
-      expression: this.Expression(),
-    };
+  ExpressionStatement(): ExpressionStatementNode {
+    const expressionStatement = new ExpressionStatementNode(this.Expression());
 
     /**
      * We don't need the ";" token, so we just emit it,
@@ -583,7 +594,7 @@ export class Parser {
     if (operator) {
       const argument = this.UnaryExpression();
 
-      return this.UnaryNode(operator.lexeme, argument);
+      return new UnaryExprNode(operator, argument);
     }
 
     return this.CallExpression();
@@ -669,14 +680,6 @@ export class Parser {
     }
   }
 
-  UnaryNode(operator: any, argument: any): any {
-    return {
-      type: "UnaryExpression",
-      operator, 
-      argument,
-    };
-  }
-
   /**
    * 2 + 3 + 4 + 5
    *
@@ -698,25 +701,6 @@ export class Parser {
    * The root (closest to the top) BinaryExpression will contain 9 + 5 (9 is the described above left operand).
    */
 
-  BinaryNode(leftOperand: any, operator: any, rightOperand: any): any {
-    return {
-      type: "BinaryExpression",
-      operator,
-      left: leftOperand,
-      right: rightOperand, 
-    };
-  }
-  
-  LogicalNode(leftOperand: any, operator: any, rightOperand: any): any {
-    return {
-      type: "LogicalExpression",
-      operator,
-      left: leftOperand,
-      right: rightOperand, 
-    };
-  }
-
-
   Identifier(): any {
     const token = this._eat(TokenType.Identifier);
 
@@ -735,7 +719,10 @@ export class Parser {
    * NullLiteral => NULL;
    *
    */
-  Literal(): any {
+  Literal(): NumericLiteralNode 
+    | StringLiteralNode 
+    | BooleanLiteralNode 
+    | NullLiteralNode {
     switch(this._peek()!.type) {
       case TokenType.Number:
         return this.NumericLiteral();
@@ -747,65 +734,53 @@ export class Parser {
         return this.BooleanLiteral(true);
 
       case TokenType.False:
-        return this.BooleanLiteral(false)
+        return this.BooleanLiteral(false);
 
       case TokenType.Null:
-        return this.NullLiteral()
+        return this.NullLiteral();
     }
 
-    throw new SyntaxError('Literal: unexpected literal production.');
+    throw this._error(this._peek()!, 'Expect expression.');
   }
 
   /**
    * NullLiteral => NULL;
    *
    */
-  NullLiteral(): any {
+  NullLiteral(): NullLiteralNode {
     const token = this._eat(TokenType.Null);
 
-    return {
-      type: 'NullLiteral',
-      value: null,
-    };
+    return new NullLiteralNode(null);
   }
 
   /**
    * NumericLiteral => NUMBER;
    *
    */
-  NumericLiteral(): any {
+  NumericLiteral(): NumericLiteralNode {
     const token = this._eat(TokenType.Number);
 
-    return {
-      type: 'NumericLiteral',
-      value: Number(token.lexeme),
-    };
+    return new NumericLiteralNode(Number(token.lexeme));
   }
 
   /**
    * StringLiteral => STRING;
    *
    */
-  StringLiteral(): any {
+  StringLiteral(): StringLiteralNode {
     const token = this._eat(TokenType.String);
 
-    return {
-      type: 'StringLiteral',
-      value: token.lexeme.slice(1, -1),
-    };
+    return new StringLiteralNode(token.lexeme.slice(1, -1));
   }
 
   /**
    * BooleanLiteral => TRUE | FALSE;
    *
    */
-  BooleanLiteral(value: true | false): any {
+  BooleanLiteral(value: true | false): BooleanLiteralNode {
     this._eat(value ? TokenType.True : TokenType.False);
 
-    return {
-      type: "LogicalLiteral",
-      value: value,
-    }
+    return new BooleanLiteralNode(value);
   }
 
   _match(...operatorsTypes: TokenType[]): Token | null {
@@ -860,5 +835,19 @@ export class Parser {
     this._lookahead = this._tokenizer.getNextToken();
     
     return nextToken;
+  }
+
+  _reportError(token: Token, message: string) {
+    if (this._isEOF()) {
+      errorReporter.report(token.line, 'at end', message);
+    } else {
+      errorReporter.report(token.line, `at ${token.lexeme}`, message);
+    }
+  }
+
+  _error(token: Token, message: string) {
+    this._reportError(token, message);
+
+    return new ParseError();
   }
 }

@@ -3,8 +3,8 @@ class ErrorReporter {
 
   public withError: boolean = false;
 
-  public report(line: number, message: string) {
-    console.log(`[line ${line}] Error: ${message}`);
+  public report(line: number, where: string, message: string) {
+    console.log(`[line ${line}] Error ${where}: ${message}`);
 
     this.withError = true
   }

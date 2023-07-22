@@ -1,3 +1,6 @@
+import { BinaryExprNode } from './nodes/BinaryExprNode';
+import { UnaryExprNode } from './nodes/UnaryExprNode';
+
 export enum NodeType {
   LogicalLiteral = 'LogicalLiteral',
   StringLiteral = 'StringLiteral',
